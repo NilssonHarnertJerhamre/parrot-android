@@ -39,10 +39,6 @@ public class MainActivity extends AppCompatActivity {
                                 selectedFragment = FragmentAbout.newInstance();
                                 break;
                         }
-                        Log.d("fragment",item.getItemId()+"");
-                        Log.d("fragment",R.id.fragment_feed+"");
-                        Log.d("fragment",R.id.fragment_record+"");
-                        Log.d("fragment",R.id.fragment_about+"");
 
                         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.frame_layout, selectedFragment);
