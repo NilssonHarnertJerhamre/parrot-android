@@ -1,9 +1,10 @@
 package comnilssonharnertjerhamre.httpsgithub.parrot_android;
 
+import android.graphics.Path;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -28,9 +29,13 @@ import com.github.tbouron.shakedetector.library.ShakeDetector;
 
 import org.json.JSONArray;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 
 /**
@@ -282,6 +287,8 @@ public class FragmentFeed extends Fragment {
         String url;
         url = "https://archive.org/download/testmp3testfile/mpthreetest.mp3";
         url = "file://storage/extSdCard/count_down.mp3";
+
+
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 

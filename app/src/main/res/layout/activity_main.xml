@@ -8,12 +8,89 @@
     android:layout_height="match_parent"
     tools:context="comnilssonharnertjerhamre.httpsgithub.parrot_android.MainActivity">
 
+
+    <LinearLayout
+        android:id="@+id/login"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:layout_weight="0.5">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/parrot" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:layout_weight="0.5"
+            android:padding="30dp">
+
+            <TextView
+                android:id="@+id/label_uname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Username" />
+
+            <EditText
+                android:id="@+id/uname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="text"
+                android:text="henriknh" />
+
+            <TextView
+                android:id="@+id/label_pw"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Password" />
+
+            <EditText
+                android:id="@+id/pw"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="Password"
+                android:ems="10"
+                android:inputType="textPassword"
+                android:text="test" />
+
+            <Button
+                android:id="@+id/button_wake"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onWake"
+                android:text="Wake up" />
+
+            <Button
+                android:id="@+id/button_birth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onBirth"
+                android:text="Birth" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
     <FrameLayout
         android:id="@+id/frame_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/navigation"
-        android:animateLayoutChanges="true">
+        android:animateLayoutChanges="true"
+        android:visibility="invisible">
 
     </FrameLayout>
 
@@ -23,6 +100,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/colorPrimary"
-        app:menu="@menu/bottom_navigation_items"/>
+        android:visibility="invisible"
+        app:menu="@menu/bottom_navigation_items" />
 </RelativeLayout>
 
