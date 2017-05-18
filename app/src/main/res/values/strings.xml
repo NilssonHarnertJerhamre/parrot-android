@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">parrot-android</string>
+
+    <string name="IB_STATE">1</string>
+    <string name="IB_ID">2</string>
+    <string name="IB_PB">3</string>
+    <string name="IB_STATE_DOWNLOADER">4</string>
+    <string name="IB_STATE_PLAYER">5</string>
 </resources>
