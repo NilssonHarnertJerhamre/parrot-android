@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Manually displaying the first fragment - one time only
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.frame_layout, FragmentRecord.newInstance());
+        transaction.replace(R.id.frame_layout, FragmentFeed.newInstance());
         transaction.commit();
 
     }

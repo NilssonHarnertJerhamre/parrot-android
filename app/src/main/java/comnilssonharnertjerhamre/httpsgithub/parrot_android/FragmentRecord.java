@@ -1,9 +1,14 @@
 package comnilssonharnertjerhamre.httpsgithub.parrot_android;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,23 +17,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+
+import static android.R.attr.button;
+import static android.R.attr.delay;
 
 /**
  * Created by antonjerhamre on 2017-05-17.
  */
 
-public class FragmentRecord extends Fragment {
+public class FragmentRecord extends Fragment implements View.OnClickListener {
 
-    //private record_button mRecordButton = null;
+
+    ImageButton recordButton;
+    Button playBackButton;
+
+    int delay = 10; //milliseconds
+    Handler h = new Handler();
     private MediaRecorder mRecorder = null;
-    private static String mFileName = null;
-    //private PlayButton   mPlayButton = null;
-    private MediaPlayer mPlayer = null;
+    private MediaPlayer mediaPlayer;
 
     private boolean mStartRecording;
     private boolean mStartPlaying;
+
+
 
     public static FragmentRecord newInstance(){
         FragmentRecord fragment = new FragmentRecord();
@@ -40,108 +56,131 @@ public class FragmentRecord extends Fragment {
     public void onCreate(Bundle savedInstanceState){
 
         super.onCreate(savedInstanceState);
+    }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_record, container, false);
+        recordButton = (ImageButton) view.findViewById(R.id.record_button);
+        recordButton.setOnClickListener(this);
+        playBackButton = (Button) view.findViewById(R.id.playback_button);
+        playBackButton.setOnClickListener(this);
         mStartRecording = true;
-
+        return view;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_record, container, false); // TODO: implement fragmentRecord.xml
-    }
-
-
-    private void onRecord(boolean start) {
-
-        if (start) {
-            AudioRecordTest();
-            startRecording();
-        } else {
-            stopRecording();
-        }
-    }
-
-    private void onPlay(boolean start) {
-        if (start) {
-            AudioRecordTest();
-            startPlaying();
-        } else {
-            stopPlaying();
-        }
-    }
-
-    private void startPlaying() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(mFileName);
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            Log.d("startPlaying()", "prepare() failed");
-        }
-    }
-
-    private void stopPlaying() {
-        mPlayer.release();
-        mPlayer = null;
-    }
-
-    private void startRecording() {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.d("startRecording()", "prepare() failed");
-        }
-
-        mRecorder.start();
-    }
-
-    private void stopRecording() {
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
-
-    }
-
-    public void AudioRecordTest() {
-        mFileName = Environment.getExternalStorageDirectory().getPath();
-        mFileName += "/recording.aac";
-        Log.e("AudioRecordTest()", "File name: "+mFileName);
-
+    public void onStart(){
+        super.onStart();
+        mediaPlayer = new MediaPlayer();
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        if (mRecorder != null) {
+    public void onStop(){
+        super.onStop();
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.record_button:
+                onRecord();
+                break;
+            case R.id.playback_button:
+                onPlayBack();
+                break;
+        }
+    }
+
+
+    public void onRecord(){
+        if(mStartRecording) {
+            String mFileName = getActivity().getExternalCacheDir().getAbsolutePath();
+            mFileName += "/audiorecordtest.3gp";
+            //File file = new File(getContext().getCacheDir().toString() + "/" + "temp" + ".mp3");
+
+            mRecorder = new MediaRecorder();
+            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            //mRecorder.setOutputFile(file.toString());
+            mRecorder.setOutputFile(mFileName);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+            try {
+                mRecorder.prepare();
+            } catch (IOException e) {
+                Log.e("mRecorder", "prepare() failed");
+            }
+
+            mRecorder.start();
+
+        }
+        else{
+            mRecorder.stop();
             mRecorder.release();
             mRecorder = null;
         }
 
-        if (mPlayer != null) {
-            mPlayer.release();
-            mPlayer = null;
-        }
-    }
-
-
-    // when pressing the record button
-    public void onClickRecord(View v) {
-        onRecord(mStartRecording);
-        if (mStartRecording) {
-            // STOP RECORDING
-        } else {
-            // START RECORDING
-        }
         mStartRecording = !mStartRecording;
     }
 
+    public void onPlayBack() {
+        stop();
 
+
+        String mFileName = getActivity().getExternalCacheDir().getAbsolutePath();
+        mFileName += "/audiorecordtest.3gp";
+        //File file = new File(getContext().getCacheDir().toString() + "/" + "temp" + ".mp3");
+
+        /*
+        try {
+            Log.d("URL", file.toURL().toString());
+            Log.d("URL", mFileName);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        */
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+        try {
+            //mediaPlayer.setDataSource(file.toURL().toString());
+            mediaPlayer.setDataSource(mFileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mediaPlayer.prepareAsync();
+
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mediaPlayer.start();
+
+                h.postDelayed(new Runnable() {
+                    public void run() {
+
+
+                        //pb.setProgress(mediaPlayer.getCurrentPosition());
+
+                        if (mediaPlayer.isPlaying()) {
+                            h.postDelayed(this, delay);
+                        }
+                    }
+                }, delay);
+            }
+        });
+
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                stop();
+            }
+        });
+    }
+
+
+    private void stop() {
+        mediaPlayer.stop();
+        mediaPlayer.reset();
+    }
 }

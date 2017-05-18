@@ -3,21 +3,29 @@
     android:id="@+id/fragment_feed"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Recording app here" />
+    android:layout_height="match_parent"
+    android:weightSum="1">
 
     <ImageButton
         android:id="@+id/record_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="289dp"
+        android:layout_height="333dp"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="false"
         android:layout_gravity="center"
-        android:onClick="onClickRecord"
-        android:src="@drawable/record" />
+        android:onClick="onClick"
+        android:src="@drawable/microphone"
+        android:background="@null"
+        android:layout_weight="0.82" />
+
+    <Button
+        android:id="@+id/playback_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:layout_gravity="center"
+        android:text="Play" />
 
     <Button
         android:id="@+id/upload_button"
