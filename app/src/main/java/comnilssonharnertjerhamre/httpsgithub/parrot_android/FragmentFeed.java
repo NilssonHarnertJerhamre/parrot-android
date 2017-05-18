@@ -79,34 +79,6 @@ public class FragmentFeed extends Fragment {
         queue = Volley.newRequestQueue(getActivity());
 
         update();
-
-        String mFileName = getActivity().getExternalCacheDir().getAbsolutePath();
-        mFileName += "/audiorecordtest.3gp";
-
-
-        MediaRecorder mRecorder;
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e("mRecorder", "prepare() failed");
-        }
-
-        mRecorder.start();
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
     }
 
     @Override
