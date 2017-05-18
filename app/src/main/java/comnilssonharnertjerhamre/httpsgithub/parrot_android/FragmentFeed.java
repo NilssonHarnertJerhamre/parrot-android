@@ -50,7 +50,6 @@ public class FragmentFeed extends Fragment {
     public static FragmentFeed newInstance(){
         FragmentFeed fragment = new FragmentFeed();
         return fragment;
-
     }
 
     @Override
