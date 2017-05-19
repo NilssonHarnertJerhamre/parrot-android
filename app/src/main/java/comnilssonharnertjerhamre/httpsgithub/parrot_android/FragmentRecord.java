@@ -135,7 +135,6 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         }
     }
 
-
     public void onRecord(){
         if(mStartRecording) {
 
