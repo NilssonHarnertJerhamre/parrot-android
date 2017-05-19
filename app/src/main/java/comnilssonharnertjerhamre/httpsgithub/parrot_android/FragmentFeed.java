@@ -1,10 +1,17 @@
 package comnilssonharnertjerhamre.httpsgithub.parrot_android;
 
-import android.graphics.Path;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -14,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -27,15 +35,15 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.tbouron.shakedetector.library.ShakeDetector;
 
+import org.apache.commons.net.ftp.*;
+import org.apache.commons.net.ftp.FTP;
 import org.json.JSONArray;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 
 /**
@@ -44,6 +52,9 @@ import java.net.MalformedURLException;
 
 public class FragmentFeed extends Fragment {
 
+
+    private long enqueue;
+    private DownloadManager dm;
 
     int delay = 10; //milliseconds
     Handler h = new Handler();
@@ -118,13 +129,9 @@ public class FragmentFeed extends Fragment {
 
                 stop();
 
-
-
                 try {
 
                     JSONArray obj = new JSONArray(response);
-
-                    Log.d("asd", ""+ obj.length());
 
                     for(int i = 0; i < obj.length(); i++) {
                         int id = obj.getJSONObject(i).getInt("id");
@@ -230,70 +237,38 @@ public class FragmentFeed extends Fragment {
 
     public void downloader(final ImageButton button) {
 
-
         button.setEnabled(false);
+        final int id = Integer.parseInt(button.getTag(R.string.IB_ID).toString());
+        Toast.makeText(getActivity(), "Downloading chirp with id " + id, Toast.LENGTH_SHORT).show();
+        String path = getActivity().getExternalCacheDir().getAbsolutePath() + "/"+id+".3gp";
+        FTPHandler.download(id, path);
 
-        Toast.makeText(getActivity(), "Downloading chirp", Toast.LENGTH_SHORT).show();
 
-        String url = "http://www.google.com";
-        url = "http://ec2-52-35-30-107.us-west-2.compute.amazonaws.com:45678/chirp?id=" + button.getTag(R.string.IB_ID);
+        h.postDelayed(new Runnable(){
+            public void run(){
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Log.d("Success", response);
-
-                File file = new File(getContext().getCacheDir().toString() + "/" + button.getTag(R.string.IB_ID)+".mp3");
-
-                Log.d("New file", file.toString());
-
-                FileOutputStream outputStream;
-
-                try {
-                    outputStream = new FileOutputStream(file);//
-                    outputStream.write(response.getBytes());
-                    outputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if(FTPHandler.queue.get(id) == false) {
+                    h.postDelayed(this, delay);
+                } else {
+                    button.setTag(R.string.IB_STATE, R.string.IB_STATE_PLAYER);
+                    toggleIBImage(button);
+                    button.setEnabled(true);
                 }
-
-                button.setTag(R.string.IB_STATE, R.string.IB_STATE_PLAYER);
-                toggleIBImage(button);
-
-                button.setEnabled(true);
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("URLError", "Getting chirp didn't work");
-                button.setEnabled(true);
-            }
-        });
-        queue.add(stringRequest);
+        }, delay);
     }
+
 
     private void play(final ImageButton button) {
 
         stop();
 
-        File file = new File(getContext().getCacheDir().toString() + "/" + button.getTag(R.string.IB_ID)+".mp3");
-
-        try {
-            Log.d("URL", file.toURL().toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        String url;
-        url = "https://archive.org/download/testmp3testfile/mpthreetest.mp3";
-        url = "file://storage/extSdCard/count_down.mp3";
-
-
+        String path = getActivity().getExternalCacheDir().getAbsolutePath() + "/"+button.getTag(R.string.IB_ID)+".3gp";
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         try {
-            mediaPlayer.setDataSource(url);
+            mediaPlayer.setDataSource(path);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -314,7 +289,7 @@ public class FragmentFeed extends Fragment {
                 h.postDelayed(new Runnable(){
                     public void run(){
 
-                        Log.d("UpdateProgressbar", mediaPlayer.getCurrentPosition()+"");
+                        //Log.d("UpdateProgressbar", mediaPlayer.getCurrentPosition()+"");
                         pb.setProgress(mediaPlayer.getCurrentPosition());
 
                         if(mediaPlayer.isPlaying()) {

@@ -18,6 +18,6 @@
         android:layout_height="wrap_content"
         android:onClick="onSleep"
         android:text="Go to sleep"
-        android:visibility="invisible"/>
+        android:visibility="visible"/>
 
 </LinearLayout>

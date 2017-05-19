@@ -102,12 +102,11 @@ public class MainActivity extends AppCompatActivity {
 
                 if(res > 0) {
 
-                    Log.d("Wake", "Awaken");
+                    Log.d("Wake", "Awaken with id " + res);
 
                     DataHolder.setData(res);
 
                     showUI();
-
 
                 } else {
                     Log.d("Wake", "Its not time to wake yet");
@@ -151,8 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
                     DataHolder.setData(res);
 
-                    showUI();
-
+                    recreate();
                 } else {
                     Log.d("Wake", "Its not time to wake yet");
                     if(res == -5) {

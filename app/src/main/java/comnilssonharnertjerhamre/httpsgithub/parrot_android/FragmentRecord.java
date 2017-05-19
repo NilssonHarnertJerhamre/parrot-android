@@ -1,6 +1,7 @@
 package comnilssonharnertjerhamre.httpsgithub.parrot_android;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,16 +20,28 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,7 +49,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +62,6 @@ import java.util.Map;
  */
 
 public class FragmentRecord extends Fragment implements View.OnClickListener {
-
 
     ImageButton recordButton;
     Button playBackButton;
@@ -94,6 +110,8 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         super.onStart();
         mediaPlayer = new MediaPlayer();
         queue = Volley.newRequestQueue(getActivity());
+
+
     }
 
     @Override
@@ -120,14 +138,12 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
 
     public void onRecord(){
         if(mStartRecording) {
-            String mFileName = getActivity().getExternalCacheDir().getAbsolutePath();
-            mFileName += "/audiorecordtest.3gp";
-            //File file = new File(getContext().getCacheDir().toString() + "/" + "temp" + ".mp3");
+
+            String mFileName = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
 
             mRecorder = new MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            //mRecorder.setOutputFile(file.toString());
             mRecorder.setOutputFile(mFileName);
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
@@ -152,23 +168,11 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
     public void onPlayBack() {
         stop();
 
+        String mFileName = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
 
-        String mFileName = getActivity().getExternalCacheDir().getAbsolutePath();
-        mFileName += "/audiorecordtest.3gp";
-        //File file = new File(getContext().getCacheDir().toString() + "/" + "temp" + ".mp3");
-
-        /*
-        try {
-            Log.d("URL", file.toURL().toString());
-            Log.d("URL", mFileName);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        */
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         try {
-            //mediaPlayer.setDataSource(file.toURL().toString());
             mediaPlayer.setDataSource(mFileName);
         } catch (IOException e) {
             e.printStackTrace();
@@ -182,9 +186,6 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
 
                 h.postDelayed(new Runnable() {
                     public void run() {
-
-
-                        //pb.setProgress(mediaPlayer.getCurrentPosition());
 
                         if (mediaPlayer.isPlaying()) {
                             h.postDelayed(this, delay);
@@ -202,22 +203,17 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         });
     }
 
-
     private void stop() {
         mediaPlayer.stop();
         mediaPlayer.reset();
     }
 
-    public void onUpload(){
-        ByteArrayOutputStream buffer;
-        byte[] bytes;
-        String mFileName = getActivity().getExternalCacheDir().getAbsolutePath();
-        mFileName += "/audiorecordtest.3gp";
-        try {
-            file = getStringFromFile(mFileName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void onUpload() {
+
+
+        //String path = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
+        //FTPHandler.upload(1337,path);
+
 
         String url = "http://ec2-52-35-30-107.us-west-2.compute.amazonaws.com:45678/chirp";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
@@ -227,6 +223,10 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
                     public void onResponse(String response) {
                         // response
                         Log.d("Response", response);
+
+                        String path = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
+                        FTPHandler.upload(Integer.parseInt(response),path);
+
                     }
                 },
                 new Response.ErrorListener()
@@ -244,32 +244,12 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
 
                 Map<String, String>  params = new HashMap<String, String>();
                 params.put("parrot", String.valueOf(DataHolder.getData()));
-                params.put("chirp", file);
+                params.put("chirp", String.valueOf(DataHolder.getData()));
 
                 return params;
             }
         };
         queue.add(postRequest);
-    }
 
-    public static String convertStreamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        reader.close();
-        return sb.toString();
     }
-
-    public static String getStringFromFile (String filePath) throws Exception {
-        File fl = new File(filePath);
-        FileInputStream fin = new FileInputStream(fl);
-        String ret = convertStreamToString(fin);
-        //Make sure you close all streams.
-        fin.close();
-        return ret;
-    }
-
 }
