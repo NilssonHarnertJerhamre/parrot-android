@@ -152,10 +152,12 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
                 Log.e("mRecorder", "prepare() failed");
             }
 
+            recordButton.setImageResource(R.drawable.microphone_inuse);
             mRecorder.start();
 
         }
         else{
+            recordButton.setImageResource(R.drawable.microphone);
             mRecorder.stop();
             mRecorder.release();
             mRecorder = null;
