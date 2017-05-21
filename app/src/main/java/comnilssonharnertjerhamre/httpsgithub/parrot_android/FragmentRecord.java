@@ -211,12 +211,7 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
 
     public void onUpload() {
 
-
-        //String path = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
-        //FTPHandler.upload(1337,path);
-
-
-        String url = "http://ec2-52-35-30-107.us-west-2.compute.amazonaws.com:45678/chirp";
+        String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/chirp";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {

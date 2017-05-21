@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onWake(View v) {
 
-        String url = "http://ec2-52-35-30-107.us-west-2.compute.amazonaws.com:45678/wake";
+        String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/wake";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onBirth(View v) {
-        String url = "http://ec2-52-35-30-107.us-west-2.compute.amazonaws.com:45678/birth";
+        String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/birth";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override

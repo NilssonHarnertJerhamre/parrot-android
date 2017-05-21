@@ -21,15 +21,10 @@ public class FTPHandler {
 
     public static Map<Integer, Boolean> queue = new HashMap<Integer, Boolean>();
 
-    private static String ip = "a4220.research.ltu.se";
-    private static String username = "ftp-guest";
-    private static String password = "qwerty";
-
-    /*//private static String ip = "ec2-52-35-30-107.us-west-2.compute.amazonaws.com";
-    private static String ip = "52.35.30.107";
+    private static String ip = "ec2-34-210-104-209.us-west-2.compute.amazonaws.com";
     private static String username = "parrot";
     private static String password = "parrot";
-*/
+
 
     public static void upload(int id, String path) {
         Uploader upload = new Uploader(id, path);
@@ -58,12 +53,17 @@ public class FTPHandler {
 
                 if (con.login(username, password)) {
 
-                    con.enterLocalPassiveMode(); // important!
+                    //con.enterLocalPassiveMode(); // important!
+                    //con.enterRemotePassiveMode(); // important!
                     con.setFileType(FTP.BINARY_FILE_TYPE);
                     String data = path;
 
+                    Log.d("Uploading", data);
+
                     FileInputStream in = new FileInputStream(new File(data));
-                    boolean result = con.storeFile("/files/" + id + ".3gp", in);
+                    con.changeWorkingDirectory("files");
+                    boolean result = con.storeFile("" + id + ".3gp", in);
+                    showServerReply(con);
                     in.close();
 
                     Log.d("FTPHandler", "uploaded: " + result);
@@ -107,12 +107,13 @@ public class FTPHandler {
 
                 if (con.login(username, password))
                 {
-                    con.enterLocalPassiveMode(); // important!
+                    //con.enterRemotePassiveMode();
+                    //con.enterLocalPassiveMode(); // important!
                     con.setFileType(FTP.BINARY_FILE_TYPE);
                     String data = path;
 
                     OutputStream out = new FileOutputStream(new File(data));
-                    boolean result = con.retrieveFile("/files/" + id + ".3gp", out);
+                    boolean result = con.retrieveFile("files/" + id + ".3gp", out);
                     out.close();
                     if (result) {
 
@@ -130,6 +131,15 @@ public class FTPHandler {
                 e.printStackTrace();
             }
 
+        }
+    }
+
+    private static void showServerReply(FTPClient ftpClient) {
+        String[] replies = ftpClient.getReplyStrings();
+        if (replies != null && replies.length > 0) {
+            for (String aReply : replies) {
+                System.out.println("SERVER: " + aReply);
+            }
         }
     }
 }

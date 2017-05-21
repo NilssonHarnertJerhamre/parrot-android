@@ -119,7 +119,7 @@ public class FragmentFeed extends Fragment {
     public void update() {
         ((LinearLayout) getActivity().findViewById(R.id.layout_feed)).removeAllViews();
 
-        String url = "http://ec2-52-35-30-107.us-west-2.compute.amazonaws.com:45678/chirps";
+        String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/chirps";
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
