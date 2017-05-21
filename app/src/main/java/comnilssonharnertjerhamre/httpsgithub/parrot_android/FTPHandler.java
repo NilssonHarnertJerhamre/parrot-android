@@ -2,6 +2,7 @@ package comnilssonharnertjerhamre.httpsgithub.parrot_android;
 
 import android.util.Log;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 public class FTPHandler {
 
+    public static boolean uploading = false;
     public static Map<Integer, Boolean> queue = new HashMap<Integer, Boolean>();
 
     private static String ip = "ec2-34-210-104-209.us-west-2.compute.amazonaws.com";
@@ -46,6 +48,8 @@ public class FTPHandler {
 
             FTPClient con = null;
 
+            uploading = true;
+
             try {
                 con = new FTPClient();
 
@@ -67,7 +71,10 @@ public class FTPHandler {
                     in.close();
 
                     Log.d("FTPHandler", "uploaded: " + result);
-                    if (result) Log.v("upload result", "succeeded");
+                    if (result) {
+                        uploading = false;
+                        Log.v("upload result", "succeeded");
+                    }
                     con.logout();
                     con.disconnect();
                 } else {

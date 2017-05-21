@@ -49,8 +49,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
-                android:text="henriknh" />
+                android:inputType="text"/>
 
             <TextView
                 android:id="@+id/label_pw"
@@ -64,8 +63,7 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="Password"
                 android:ems="10"
-                android:inputType="textPassword"
-                android:text="test" />
+                android:inputType="textPassword" />
 
             <Button
                 android:id="@+id/button_wake"

@@ -25,6 +25,7 @@
         android:layout_height="wrap_content"
         android:onClick="onClick"
         android:layout_gravity="center"
+        android:enabled="false"
         android:text="Play" />
 
     <Button
@@ -32,6 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:enabled="false"
         android:text="Send" />
 
 </LinearLayout>

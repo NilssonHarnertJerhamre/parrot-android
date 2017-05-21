@@ -127,7 +127,11 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
                 onRecord();
                 break;
             case R.id.playback_button:
-                onPlayBack();
+                if(mediaPlayer.isPlaying()) {
+                    stop();
+                } else {
+                    onPlayBack();
+                }
                 break;
             case R.id.upload_button:
                 onUpload();
@@ -161,6 +165,8 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
             mRecorder.stop();
             mRecorder.release();
             mRecorder = null;
+            uploadButton.setEnabled(true);
+            playBackButton.setEnabled(true);
         }
 
         mStartRecording = !mStartRecording;
@@ -168,6 +174,8 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
 
     public void onPlayBack() {
         stop();
+
+        playBackButton.setText("Stop");
 
         String mFileName = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
 
@@ -205,11 +213,18 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
     }
 
     private void stop() {
+
+        playBackButton.setText("Play");
         mediaPlayer.stop();
         mediaPlayer.reset();
     }
 
     public void onUpload() {
+
+        uploadButton.setEnabled(false);
+        uploadButton.setText("Uploading...");
+        recordButton.setEnabled(false);
+        recordButton.setAlpha(0.5f);
 
         String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/chirp";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
@@ -222,6 +237,20 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
 
                         String path = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
                         FTPHandler.upload(Integer.parseInt(response),path);
+
+                        h.postDelayed(new Runnable(){
+                            public void run(){
+
+                                if(FTPHandler.uploading == true) {
+                                    h.postDelayed(this, delay);
+                                } else {
+                                    uploadButton.setText("Send");
+                                    recordButton.setEnabled(true);
+                                    recordButton.setAlpha(1.0f);
+                                    Toast.makeText(getActivity(), "Upload completed!", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }, delay);
 
                     }
                 },
