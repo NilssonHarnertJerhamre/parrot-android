@@ -108,10 +108,9 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
     @Override
     public void onStart(){
         super.onStart();
+        // Init MediaPlayer and Network module.
         mediaPlayer = new MediaPlayer();
         queue = Volley.newRequestQueue(getActivity());
-
-
     }
 
     @Override
@@ -119,7 +118,9 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         super.onStop();
     }
 
-
+    /*
+    OnClick listener for recoding chirp, playing/stoping chirp and uploading chirp.
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -139,11 +140,18 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void onRecord(){
-        if(mStartRecording) {
+    /*
+    Starting to record audio file.
+     */
 
+    public void onRecord(){
+        // IF recording
+        if(mStartRecording) { // Should start recording
+
+            // path to save file to.
             String mFileName = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
 
+            // Settings for MediaPlayer
             mRecorder = new MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -156,15 +164,21 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
                 Log.e("mRecorder", "prepare() failed");
             }
 
+            // Feedback so that user can see that a recording is ongoing.
             recordButton.setImageResource(R.drawable.microphone_inuse);
+
+            // Stared recording.
             mRecorder.start();
 
         }
-        else{
+        else{ // Recoding is ongoing and therefore should be paused.
+            // Set image back.
             recordButton.setImageResource(R.drawable.microphone);
+            // Stop recording
             mRecorder.stop();
             mRecorder.release();
             mRecorder = null;
+            // Enabled record button and Play/Stop button
             uploadButton.setEnabled(true);
             playBackButton.setEnabled(true);
         }
@@ -172,13 +186,18 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         mStartRecording = !mStartRecording;
     }
 
+    /*
+    Play recorded audio file.
+     */
     public void onPlayBack() {
+        // Stop and ongoing audio file.
         stop();
 
+        // Set text of button to stop.
         playBackButton.setText("Stop");
 
+        // Path to file and setting of MediaPlayer
         String mFileName = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
-
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         try {
@@ -191,6 +210,7 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                // Start recording
                 mediaPlayer.start();
 
                 h.postDelayed(new Runnable() {
@@ -204,6 +224,7 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
             }
         });
 
+        // Stopping audio playback when audiotrack is over.
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -212,6 +233,9 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         });
     }
 
+    /*
+    Stop currently playing audiotrack.
+     */
     private void stop() {
 
         playBackButton.setText("Play");
@@ -219,13 +243,20 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
         mediaPlayer.reset();
     }
 
+    /*
+    Upload file to FTP server.
+     */
     public void onUpload() {
 
+        // Disable upload and recording button while uploading.
         uploadButton.setEnabled(false);
         uploadButton.setText("Uploading...");
         recordButton.setEnabled(false);
+        // Set opacity to 50% so that user can see that you cant interact with button.
         recordButton.setAlpha(0.5f);
 
+        // Sending info to server that will store that info in a database. And will return the id for
+        // that chirp. The id will then be use as filename for storing on FTP server.
         String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/chirp";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
@@ -235,9 +266,14 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
                         // response
                         Log.d("Response", response);
 
+                        // Server responded that it was ok to upload data to server and therefore
+                        // OK to upload file to FTP server
+
                         String path = getActivity().getExternalCacheDir().getAbsolutePath() + "/temp.3gp";
+                        // Upload file to FTP server.
                         FTPHandler.upload(Integer.parseInt(response),path);
 
+                        // Wait for upload to be complete and then enable record and upload buttons.
                         h.postDelayed(new Runnable(){
                             public void run(){
 
@@ -266,7 +302,7 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
             @Override
             protected Map<String, String> getParams()
             {
-
+                // Attatch data to POST request
                 Map<String, String>  params = new HashMap<String, String>();
                 params.put("parrot", String.valueOf(DataHolder.getData()));
                 params.put("chirp", String.valueOf(DataHolder.getData()));
@@ -274,6 +310,7 @@ public class FragmentRecord extends Fragment implements View.OnClickListener {
                 return params;
             }
         };
+        // Send request.
         queue.add(postRequest);
 
     }

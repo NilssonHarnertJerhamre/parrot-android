@@ -40,10 +40,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initiate current user to -1, AKA none.
         DataHolder.setData(-1);
 
         queue = Volley.newRequestQueue(this);
 
+        // Creating logic for displaying correct fragment after click on bottom navigation bar.
         mBottomNav = (BottomNavigationView) findViewById(R.id.navigation);
         mBottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -77,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /*
+    Toggling between login screen and fragment view if a user is signed in.
+     */
+
     private void showUI() {
         if(DataHolder.getData() == -1) {
             findViewById(R.id.login).setVisibility(View.VISIBLE);
@@ -89,8 +95,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*
+    Sign in of user.
+     */
     public void onWake(View v) {
 
+        // HTTP POST request.
         String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/wake";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -102,10 +112,14 @@ public class MainActivity extends AppCompatActivity {
 
                 if(res > 0) {
 
+                    // OK, user signed in.
+
                     Log.d("Wake", "Awaken with id " + res);
 
+                    // Set id of user so that the app can user it.
                     DataHolder.setData(res);
 
+                    // Toggle UI.
                     showUI();
 
                 } else {
@@ -124,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams()
             {
+                // Adding data to the POST request. Username and password.
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("uname", ((EditText) findViewById(R.id.uname)).getText().toString());
                 params.put("pw", ((EditText) findViewById(R.id.pw)).getText().toString());
@@ -131,10 +146,17 @@ public class MainActivity extends AppCompatActivity {
                 return params;
             }
         };
+        // Sending HTTP POST request.
         queue.add(stringRequest);
     }
 
+    /*
+    Register of new user.
+     */
+
     public void onBirth(View v) {
+
+        // HTTP POST request.
         String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/birth";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -145,11 +167,14 @@ public class MainActivity extends AppCompatActivity {
                 int res = Integer.parseInt(response);
 
                 if(res > 0) {
+                    // OK, user registered
 
                     Log.d("Birth", "Mother gave birth to you.");
 
+                    // Set id of user so the rest of the app can access id.
                     DataHolder.setData(res);
 
+                    // Toggle UI.
                     showUI();
 
                 } else {
@@ -171,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams()
             {
+                // Adding data to the POST request. Username and password.
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("uname", ((EditText) findViewById(R.id.uname)).getText().toString());
                 params.put("pw", ((EditText) findViewById(R.id.pw)).getText().toString());
@@ -178,6 +204,7 @@ public class MainActivity extends AppCompatActivity {
                 return params;
             }
         };
+        // Send HTTP POST request.
         queue.add(stringRequest);
 
 

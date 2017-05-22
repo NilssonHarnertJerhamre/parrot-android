@@ -48,9 +48,13 @@ import java.net.MalformedURLException;
 
 /**
  * Created by antonjerhamre on 2017-05-17.
+ *
+ * Class fragment to show the feed of "parrot chirps".
  */
 
 public class FragmentFeed extends Fragment {
+
+
 
 
     private long enqueue;
@@ -73,16 +77,24 @@ public class FragmentFeed extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
+    /*
+    Called when fragment is created.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_feed, container, false);
     }
+    /*
+    Called when fragment is started.
+     */
 
     @Override
     public void onStart() {
         super.onStart();
 
+        // Initiate ShakeDetector so that when shaking the device
+        // the feed will be updated.
         ShakeDetector.create(getActivity(), new ShakeDetector.OnShakeListener() {
             @Override
             public void OnShake() {
@@ -91,15 +103,19 @@ public class FragmentFeed extends Fragment {
             }
         });
 
+        // Initiating MediaPlayer
         mediaPlayer = new MediaPlayer();
+        // Initiating that is used to do network request.
         queue = Volley.newRequestQueue(getActivity());
 
+        // Downloading data and displaying on the feed.
         update();
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        // Pauses shake listener.
         ShakeDetector.stop();
 
     }
@@ -107,18 +123,24 @@ public class FragmentFeed extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Starts shake listener.
         ShakeDetector.start();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        // Destorys shake listener.
         ShakeDetector.destroy();
     }
 
     public void update() {
+
+        // Removing everything currently in the feed.
         ((LinearLayout) getActivity().findViewById(R.id.layout_feed)).removeAllViews();
 
+
+        // Making HTTP GET request to get feed items.
         String url = "http://ec2-34-210-104-209.us-west-2.compute.amazonaws.com:45678/chirps";
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
@@ -127,10 +149,12 @@ public class FragmentFeed extends Fragment {
 
                 Log.d("Success", response);
 
+                // Stopping mediaplayer if any chirp is play before creating new feed item
                 stop();
 
                 try {
 
+                    // For each feed item append it to feeed view.
                     JSONArray obj = new JSONArray(response);
 
                     for(int i = 0; i < obj.length(); i++) {
@@ -152,33 +176,40 @@ public class FragmentFeed extends Fragment {
                 Log.d("URLError", "Getting chirps didn't work");
             }
         });
+        // Sending HTTP GET request to URL above.
         queue.add(stringRequest);
     }
 
     public void createChirp(int id, String parrot, String datetime) {
 
+        // Getting screen dimensions.
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
 
+        // Helper to set size according to screen size.
         LinearLayout.LayoutParams params;
 
+        // Container for a feed item.
         LinearLayout root = new LinearLayout(getActivity());
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(8,0,8,0);
 
+        // Container containing Text items on the left and ImageButton on the right.
         LinearLayout ll_grid = new LinearLayout(getActivity());
         ll_grid.setOrientation(LinearLayout.HORIZONTAL);
         params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         ll_grid.setLayoutParams(params);
 
 
+        // Container for texts
         LinearLayout ll_texts = new LinearLayout(getActivity());
         ll_texts.setOrientation(LinearLayout.VERTICAL);
         params = new LinearLayout.LayoutParams(width - 2 * 8 - 96, 96);
         ll_texts.setLayoutParams(params);
 
+        // Username text
         TextView tv_uname = new TextView(getActivity());
         tv_uname.setText(parrot);
         tv_uname.setTextSize(24);
@@ -186,6 +217,7 @@ public class FragmentFeed extends Fragment {
         params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 64);
         tv_uname.setLayoutParams(params);
 
+        // Datetime text
         TextView tv_sent = new TextView(getActivity());
         tv_sent.setText(datetime);
         tv_sent.setTextSize(12);
@@ -193,9 +225,12 @@ public class FragmentFeed extends Fragment {
         params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 32);
         tv_sent.setLayoutParams(params);
 
+        // Adding username and datetime to container for texts
         ll_texts.addView(tv_uname);
         ll_texts.addView(tv_sent);
 
+        // Imagebutton for doing actions on chirp. Actions are Download, Play/Stop.
+        // Containing data-tags that us used when doing above actions.
         ImageButton ib = new ImageButton(getActivity());
         params = new LinearLayout.LayoutParams(96, 96);
         ib.setLayoutParams(params);
@@ -204,36 +239,46 @@ public class FragmentFeed extends Fragment {
         ib.setTag(R.string.IB_STATE, R.string.IB_STATE_DOWNLOADER);
         ib.setTag(R.string.IB_ID, id);
 
+        // Adding text container and ImageButton to Grid-container.
         ll_grid.addView(ll_texts);
         ll_grid.addView(ib);
 
+        // Progressbar for feedback on currently playing chirp.
         ProgressBar pb = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
         pb.setProgress(70);
         pb.setVisibility(View.INVISIBLE);
         ib.setTag(R.string.IB_PB, pb);
 
+        // Adding progressbar and grid-container.
         root.addView(ll_grid);
         root.addView(pb);
 
+        // Adding the whole container to the view.
         ((LinearLayout) getActivity().findViewById(R.id.layout_feed)).addView(root);
 
     }
 
-    View.OnClickListener getOnClickDoSomething(final ImageButton button)  {
+    public View.OnClickListener getOnClickDoSomething(final ImageButton button)  {
         return new View.OnClickListener() {
             public void onClick(View v) {
-                if ((int)button.getTag(R.string.IB_STATE) == R.string.IB_STATE_DOWNLOADER) {
+
+                if ((int)button.getTag(R.string.IB_STATE) == R.string.IB_STATE_DOWNLOADER) { // Download
                     downloader(button);
-                } else if((int)button.getTag(R.string.IB_STATE) == R.string.IB_STATE_PLAYER) {
-                    if(currently_playing == button) {
+                } else if((int)button.getTag(R.string.IB_STATE) == R.string.IB_STATE_PLAYER) { // Play/Stop
+                    if(currently_playing == button) { // Stop
                         stop();
-                    } else {
+                    } else { // Play
                         play(button);
                     }
                 }
             }
         };
     }
+
+    /*
+    Download chirp from FTP server with FTPHandler class.
+    Locking button while downloading. And listening till chirp is downloaded..
+     */
 
     public void downloader(final ImageButton button) {
 
@@ -258,6 +303,11 @@ public class FragmentFeed extends Fragment {
         }, delay);
     }
 
+    /*
+    Play chirp after chirp is downloaded. Stops any currently playing chirp before playing.
+    Starts chirp and creates a listener for tracking progress of track so that ProgressBar can
+    be updated so that you get feedback on how long the chirp is.
+     */
 
     private void play(final ImageButton button) {
 
@@ -309,6 +359,10 @@ public class FragmentFeed extends Fragment {
 
     }
 
+    /*
+    Stops currently playing song.
+     */
+
     private void stop() {
         mediaPlayer.stop();
         mediaPlayer.reset();
@@ -319,6 +373,10 @@ public class FragmentFeed extends Fragment {
         }
         currently_playing = null;
     }
+
+    /*
+    Changes image of ImageButton depending on which state it is in, Download or Play/Stop.
+     */
 
     private void toggleIBImage(final ImageButton button) {
         if ((int)button.getTag(R.string.IB_STATE) == R.string.IB_STATE_DOWNLOADER) {

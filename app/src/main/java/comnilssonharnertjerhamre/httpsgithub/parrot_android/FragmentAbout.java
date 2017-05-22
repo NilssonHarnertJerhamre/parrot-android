@@ -46,6 +46,9 @@ public class FragmentAbout extends Fragment implements View.OnClickListener  {
     }
 
 
+    /*
+    Signs out user and displays login screen again.
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()){

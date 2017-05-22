@@ -23,10 +23,17 @@ public class FTPHandler {
     public static boolean uploading = false;
     public static Map<Integer, Boolean> queue = new HashMap<Integer, Boolean>();
 
+
+    // Info for connecting to FTP server.
     private static String ip = "ec2-34-210-104-209.us-west-2.compute.amazonaws.com";
     private static String username = "parrot";
     private static String password = "parrot";
 
+    /*
+
+    Connecting to FTP server and uploading file to server.
+
+     */
 
     public static void upload(int id, String path) {
         Uploader upload = new Uploader(id, path);
@@ -34,6 +41,7 @@ public class FTPHandler {
         t.start();
     }
 
+    // New class because this functionality is needed to run in a separate thread.
     public static class Uploader implements Runnable {
 
         private int id;
@@ -48,6 +56,7 @@ public class FTPHandler {
 
             FTPClient con = null;
 
+            // Blocking other uploads.
             uploading = true;
 
             try {
@@ -57,13 +66,13 @@ public class FTPHandler {
 
                 if (con.login(username, password)) {
 
-                    //con.enterLocalPassiveMode(); // important!
-                    //con.enterRemotePassiveMode(); // important!
+                    // Default is ascii so changing to binary
                     con.setFileType(FTP.BINARY_FILE_TYPE);
                     String data = path;
 
                     Log.d("Uploading", data);
 
+                    // Getting file stream and storing it on server.
                     FileInputStream in = new FileInputStream(new File(data));
                     con.changeWorkingDirectory("files");
                     boolean result = con.storeFile("" + id + ".3gp", in);
@@ -72,6 +81,7 @@ public class FTPHandler {
 
                     Log.d("FTPHandler", "uploaded: " + result);
                     if (result) {
+                        // Unlocking uploading
                         uploading = false;
                         Log.v("upload result", "succeeded");
                     }
@@ -86,12 +96,19 @@ public class FTPHandler {
         }
     }
 
+    /*
+
+    Connecting to FTP server and downloading file from server.
+
+     */
+
     public static void download(int id, String path) {
         Downloader download = new Downloader(id, path);
         Thread t = new Thread(download);
         t.start();
     }
 
+    // New class because this functionality is needed to run in a separate thread.
     public static class Downloader implements Runnable {
 
         private int id;
@@ -101,6 +118,7 @@ public class FTPHandler {
             this.id = id;
             this.path = path;
 
+            // Adding file id to queue so that listener in FragmentFeed know that file is not yet downloaded.
             queue.put(id, false);
         }
 
@@ -114,16 +132,17 @@ public class FTPHandler {
 
                 if (con.login(username, password))
                 {
-                    //con.enterRemotePassiveMode();
-                    //con.enterLocalPassiveMode(); // important!
+                    // Default is ascii so changing to binary
                     con.setFileType(FTP.BINARY_FILE_TYPE);
                     String data = path;
 
+                    // Creating file stream and getting file form server to store on mobile.
                     OutputStream out = new FileOutputStream(new File(data));
                     boolean result = con.retrieveFile("files/" + id + ".3gp", out);
                     out.close();
                     if (result) {
 
+                        // Setting file to downloaded, true. So that listener know that file is downloaded.
                         queue.put(id, true);
 
                         Log.v("download result", "succeeded");
@@ -140,6 +159,10 @@ public class FTPHandler {
 
         }
     }
+
+    /*
+    Helper function to troubleshoot errors received when doing requests to FTP server.
+     */
 
     private static void showServerReply(FTPClient ftpClient) {
         String[] replies = ftpClient.getReplyStrings();
