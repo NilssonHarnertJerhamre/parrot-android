@@ -150,7 +150,8 @@ public class MainActivity extends AppCompatActivity {
 
                     DataHolder.setData(res);
 
-                    recreate();
+                    showUI();
+
                 } else {
                     Log.d("Wake", "Its not time to wake yet");
                     if(res == -5) {
